@@ -94,7 +94,9 @@ form{
     padding-right:0;
     flex-grow:1;
     transition:500ms ease;
+    word-break: break-word;
 }
+
 
 .delete-button{
     padding:3px;
