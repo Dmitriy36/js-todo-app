@@ -5,21 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>To-Do List</title>
     <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app.js" defer></script>
   </head>
   <body>
     <h1>To-Do List</h1>
-    <div class="wrapper">
-      <form>
-        <input
-          id="todo-input"
-          type="text"
-          placeholder="Enter a to-do task here..."
-          autocomplete="off"
-        />
-        <button id="add-button">ADD</button>
-      </form>
-      <ul id="todo-list"></ul>
+
+    <!-- Login Screen -->
+    <div id="login-screen">
+      <div class="login-box">
+        <p class="login-subtitle">Enter your email to sign in</p>
+        <div class="login-form">
+          <input
+            id="email-input"
+            type="email"
+            placeholder="your@email.com"
+            autocomplete="email"
+          />
+          <button id="magic-link-button">SEND MAGIC LINK</button>
+        </div>
+        <p id="login-message" class="login-message hidden"></p>
+      </div>
+    </div>
+
+    <!-- Todo App (hidden until logged in) -->
+    <div id="app" class="hidden">
+      <button id="logout-button">Log out</button>
+      <div class="wrapper">
+        <form>
+          <input
+            id="todo-input"
+            type="text"
+            placeholder="Enter a to-do task here..."
+            autocomplete="off"
+          />
+          <button id="add-button">ADD</button>
+        </form>
+        <ul id="todo-list"></ul>
+      </div>
     </div>
   </body>
 </html>

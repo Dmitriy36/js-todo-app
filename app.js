@@ -1,30 +1,140 @@
+const SUPABASE_URL = "https://bkssvocrrtsrvixsdips.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_jTvQT_2bWNqjExhXJsgzwQ_6pZpbQZy";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── UI ELEMENTS ───────────────────────────────────────────────────────────────
+const loginScreen = document.getElementById("login-screen");
+const appDiv = document.getElementById("app");
+const emailInput = document.getElementById("email-input");
+const magicLinkButton = document.getElementById("magic-link-button");
+const loginMessage = document.getElementById("login-message");
+const logoutButton = document.getElementById("logout-button");
 const todoForm = document.querySelector("form");
 const todoInput = document.getElementById("todo-input");
 const todoListUL = document.getElementById("todo-list");
 
-let allTodos = getTodos();
-updateTodoList();
+let allTodos = [];
+let currentUser = null;
 
+// ── AUTH STATE ────────────────────────────────────────────────────────────────
+supabaseClient.auth.onAuthStateChange(async (event, session) => {
+  if (session && session.user) {
+    currentUser = session.user;
+    showApp();
+    await loadTodos();
+  } else {
+    currentUser = null;
+    showLogin();
+  }
+});
+
+function showApp() {
+  loginScreen.classList.add("hidden");
+  appDiv.classList.remove("hidden");
+}
+
+function showLogin() {
+  appDiv.classList.add("hidden");
+  loginScreen.classList.remove("hidden");
+  allTodos = [];
+  todoListUL.innerHTML = "";
+}
+
+// ── MAGIC LINK ────────────────────────────────────────────────────────────────
+magicLinkButton.addEventListener("click", async () => {
+  const email = emailInput.value.trim();
+  if (!email) {
+    showMessage("Please enter your email address.", true);
+    return;
+  }
+  magicLinkButton.disabled = true;
+  magicLinkButton.textContent = "SENDING...";
+  const { error } = await supabaseClient.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: "https://todo.martian-buddy.com" },
+  });
+  if (error) {
+    showMessage(error.message, true);
+    magicLinkButton.disabled = false;
+    magicLinkButton.textContent = "SEND MAGIC LINK";
+  } else {
+    showMessage("✓ Check your email for a login link!", false);
+    magicLinkButton.textContent = "SENT!";
+  }
+});
+
+emailInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") magicLinkButton.click();
+});
+
+function showMessage(text, isError) {
+  loginMessage.textContent = text;
+  loginMessage.classList.remove("hidden", "error");
+  if (isError) loginMessage.classList.add("error");
+}
+
+// ── LOGOUT ────────────────────────────────────────────────────────────────────
+logoutButton.addEventListener("click", async () => {
+  await supabaseClient.auth.signOut();
+});
+
+// ── TODOS ─────────────────────────────────────────────────────────────────────
+async function loadTodos() {
+  const { data, error } = await supabaseClient
+    .from("todos")
+    .select("*")
+    .eq("user_id", currentUser.id)
+    .order("position", { ascending: true });
+  if (error) {
+    console.error(error);
+    return;
+  }
+  allTodos = data || [];
+  updateTodoList();
+}
+
+async function saveTodo(todo) {
+  const { error } = await supabaseClient.from("todos").upsert({
+    id: todo.id,
+    user_id: currentUser.id,
+    position: todo.position,
+    text: todo.text,
+    completed: todo.completed,
+    subtasks: todo.subtasks || [],
+  });
+  if (error) console.error(error);
+}
+
+async function deleteTodoFromDB(id) {
+  const { error } = await supabaseClient.from("todos").delete().eq("id", id);
+  if (error) console.error(error);
+}
+
+// ── FORM ──────────────────────────────────────────────────────────────────────
 todoForm.addEventListener("submit", (e) => {
   e.preventDefault();
   addTodo();
 });
 
-function addTodo() {
+async function addTodo() {
   const todoText = todoInput.value.trim();
   if (todoText.length > 0) {
-    const todoObject = {
+    const newTodo = {
+      id: crypto.randomUUID(),
+      user_id: currentUser.id,
       text: todoText,
       completed: false,
       subtasks: [],
+      position: allTodos.length,
     };
-    allTodos.push(todoObject);
+    allTodos.push(newTodo);
     updateTodoList();
-    saveTodos();
     todoInput.value = "";
+    await saveTodo(newTodo);
   }
 }
 
+// ── RENDER ────────────────────────────────────────────────────────────────────
 function updateTodoList() {
   todoListUL.innerHTML = "";
   allTodos.forEach((todo, todoIndex) => {
@@ -40,24 +150,21 @@ function createTodoItem(todo, todoIndex) {
   todoLI.className = "todo";
   todoLI.dataset.index = todoIndex;
 
-  // Number label: e.g. "1."
-  const numberLabel = document.createElement("span");
-  numberLabel.className = "task-number";
-  numberLabel.textContent = todoIndex + 1 + ".";
-
-  // Drag handle
   const dragHandle = document.createElement("span");
   dragHandle.className = "drag-handle";
   dragHandle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor"><path d="M360-160q-33 0-56.5-23.5T280-240q0-33 23.5-56.5T360-320q33 0 56.5 23.5T440-240q0 33-23.5 56.5T360-160Zm240 0q-33 0-56.5-23.5T520-240q0-33 23.5-56.5T600-320q33 0 56.5 23.5T680-240q0 33-23.5 56.5T600-160ZM360-400q-33 0-56.5-23.5T280-480q0-33 23.5-56.5T360-560q33 0 56.5 23.5T440-480q0 33-23.5 56.5T360-400Zm240 0q-33 0-56.5-23.5T520-480q0-33 23.5-56.5T600-560q33 0 56.5 23.5T680-480q0 33-23.5 56.5T600-400ZM360-640q-33 0-56.5-23.5T280-720q0-33 23.5-56.5T360-800q33 0 56.5 23.5T440-720q0 33-23.5 56.5T360-640Zm240 0q-33 0-56.5-23.5T520-720q0-33 23.5-56.5T600-800q33 0 56.5 23.5T680-720q0 33-23.5 56.5T600-640Z"/></svg>`;
-  dragHandle.setAttribute("draggable", false); // handle is for pointer events only
+
+  const numberLabel = document.createElement("span");
+  numberLabel.className = "task-number";
+  numberLabel.textContent = todoIndex + 1 + ".";
 
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
   checkbox.id = todoID;
   checkbox.checked = todo.completed;
-  checkbox.addEventListener("change", () => {
+  checkbox.addEventListener("change", async () => {
     allTodos[todoIndex].completed = checkbox.checked;
-    saveTodos();
+    await saveTodo(allTodos[todoIndex]);
   });
 
   const customCheckbox = document.createElement("label");
@@ -70,7 +177,6 @@ function createTodoItem(todo, todoIndex) {
   textLabel.className = "todo-text";
   textLabel.textContent = todo.text;
 
-  // Add subtask button
   const addSubBtn = document.createElement("button");
   addSubBtn.className = "add-sub-button";
   addSubBtn.title = "Add subtask";
@@ -88,7 +194,6 @@ function createTodoItem(todo, todoIndex) {
   todoLI.appendChild(addSubBtn);
   todoLI.appendChild(deleteButton);
 
-  // Subtask list
   if (!todo.subtasks) todo.subtasks = [];
   if (todo.subtasks.length > 0) {
     const subList = document.createElement("ul");
@@ -102,7 +207,6 @@ function createTodoItem(todo, todoIndex) {
     initSubtaskDrag(subList, todoIndex);
   }
 
-  // Inline subtask input (hidden by default)
   const subInputRow = document.createElement("div");
   subInputRow.className = "sub-input-row hidden";
   const subInput = document.createElement("input");
@@ -117,22 +221,18 @@ function createTodoItem(todo, todoIndex) {
   subInputRow.appendChild(subAddBtn);
   todoLI.appendChild(subInputRow);
 
-  // Toggle subtask input
   addSubBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     subInputRow.classList.toggle("hidden");
-    if (!subInputRow.classList.contains("hidden")) {
-      subInput.focus();
-    }
+    if (!subInputRow.classList.contains("hidden")) subInput.focus();
   });
 
-  // Confirm adding subtask
-  function confirmAddSubtask() {
+  async function confirmAddSubtask() {
     const text = subInput.value.trim();
     if (text.length > 0) {
       if (!allTodos[todoIndex].subtasks) allTodos[todoIndex].subtasks = [];
       allTodos[todoIndex].subtasks.push({ text, completed: false });
-      saveTodos();
+      await saveTodo(allTodos[todoIndex]);
       updateTodoList();
     } else {
       subInputRow.classList.add("hidden");
@@ -145,12 +245,14 @@ function createTodoItem(todo, todoIndex) {
       e.preventDefault();
       confirmAddSubtask();
     }
-    if (e.key === "Escape") {
-      subInputRow.classList.add("hidden");
-    }
+    if (e.key === "Escape") subInputRow.classList.add("hidden");
   });
 
-  deleteButton.addEventListener("click", () => deleteTodoItem(todoIndex));
+  deleteButton.addEventListener("click", async () => {
+    await deleteTodoFromDB(todo.id);
+    allTodos = allTodos.filter((_, i) => i !== todoIndex);
+    updateTodoList();
+  });
 
   return todoLI;
 }
@@ -174,9 +276,9 @@ function createSubtaskItem(sub, parentIndex, subIndex) {
   checkbox.type = "checkbox";
   checkbox.id = subID;
   checkbox.checked = sub.completed;
-  checkbox.addEventListener("change", () => {
+  checkbox.addEventListener("change", async () => {
     allTodos[parentIndex].subtasks[subIndex].completed = checkbox.checked;
-    saveTodos();
+    await saveTodo(allTodos[parentIndex]);
   });
 
   const customCheckbox = document.createElement("label");
@@ -192,9 +294,13 @@ function createSubtaskItem(sub, parentIndex, subIndex) {
   const deleteBtn = document.createElement("button");
   deleteBtn.className = "delete-button delete-button--sub";
   deleteBtn.innerHTML = `<svg fill="var(--secondary-color)" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>`;
-  deleteBtn.addEventListener("click", () =>
-    deleteSubtask(parentIndex, subIndex),
-  );
+  deleteBtn.addEventListener("click", async () => {
+    allTodos[parentIndex].subtasks = allTodos[parentIndex].subtasks.filter(
+      (_, i) => i !== subIndex,
+    );
+    await saveTodo(allTodos[parentIndex]);
+    updateTodoList();
+  });
 
   subLI.appendChild(dragHandle);
   subLI.appendChild(numberLabel);
@@ -206,22 +312,7 @@ function createSubtaskItem(sub, parentIndex, subIndex) {
   return subLI;
 }
 
-function deleteSubtask(parentIndex, subIndex) {
-  allTodos[parentIndex].subtasks = allTodos[parentIndex].subtasks.filter(
-    (_, i) => i !== subIndex,
-  );
-  saveTodos();
-  updateTodoList();
-}
-
-function deleteTodoItem(todoIndex) {
-  allTodos = allTodos.filter((_, i) => i !== todoIndex);
-  saveTodos();
-  updateTodoList();
-}
-
-// ─── DRAG AND DROP (tasks) ────────────────────────────────────────────────────
-
+// ── DRAG AND DROP ─────────────────────────────────────────────────────────────
 function initTaskDrag() {
   const items = todoListUL.querySelectorAll(":scope > li.todo");
   items.forEach((item) => setupDraggable(item, todoListUL, "task"));
@@ -232,9 +323,7 @@ function initSubtaskDrag(subList, parentIndex) {
   items.forEach((item) => setupDraggable(item, subList, "subtask"));
 }
 
-// Unified drag setup: works via HTML5 drag API (desktop) and touch events (mobile)
 function setupDraggable(item, container, type) {
-  // HTML5 drag (desktop)
   item.setAttribute("draggable", "true");
 
   item.addEventListener("dragstart", (e) => {
@@ -257,9 +346,7 @@ function setupDraggable(item, container, type) {
     if (!dragging) return;
     const target = getDragTarget(e.clientY, container, type);
     removeDropIndicators();
-    if (target) {
-      target.classList.add("drag-over");
-    }
+    if (target) target.classList.add("drag-over");
   });
 
   container.addEventListener("drop", (e) => {
@@ -285,7 +372,6 @@ function setupDraggable(item, container, type) {
     }
   });
 
-  // Touch drag (mobile)
   let touchClone = null;
   let touchOffsetX = 0;
   let touchOffsetY = 0;
@@ -293,18 +379,13 @@ function setupDraggable(item, container, type) {
   item.addEventListener(
     "touchstart",
     (e) => {
-      // Only start drag if touching the drag handle
       if (!e.target.closest(".drag-handle")) return;
       e.stopPropagation();
-
       const touch = e.touches[0];
       const rect = item.getBoundingClientRect();
       touchOffsetX = touch.clientX - rect.left;
       touchOffsetY = touch.clientY - rect.top;
-
       item.classList.add("dragging");
-
-      // Create visual clone
       touchClone = item.cloneNode(true);
       touchClone.classList.add("touch-drag-clone");
       touchClone.style.width = rect.width + "px";
@@ -325,12 +406,9 @@ function setupDraggable(item, container, type) {
       touchClone.style.left = touch.clientX - touchOffsetX + "px";
       touchClone.style.top =
         touch.clientY - touchOffsetY + window.scrollY + "px";
-
       removeDropIndicators();
       const target = getDragTarget(touch.clientY, container, type);
-      if (target && target !== item) {
-        target.classList.add("drag-over");
-      }
+      if (target && target !== item) target.classList.add("drag-over");
     },
     { passive: false },
   );
@@ -338,7 +416,6 @@ function setupDraggable(item, container, type) {
   item.addEventListener("touchend", (e) => {
     if (!touchClone) return;
     const touch = e.changedTouches[0];
-
     removeDropIndicators();
     const target = getDragTarget(touch.clientY, container, type);
     if (target && target !== item) {
@@ -355,7 +432,6 @@ function setupDraggable(item, container, type) {
         container.insertBefore(item, target);
       }
     }
-
     item.classList.remove("dragging");
     touchClone.remove();
     touchClone = null;
@@ -369,7 +445,6 @@ function getDragTarget(clientY, container, type) {
       ? ":scope > li.todo:not(.dragging)"
       : ":scope > li.subtask:not(.dragging)";
   const items = [...container.querySelectorAll(selector)];
-  // Find the item whose midpoint is just below the cursor
   return (
     items.reduce((closest, child) => {
       const box = child.getBoundingClientRect();
@@ -389,8 +464,7 @@ function removeDropIndicators() {
     .forEach((el) => el.classList.remove("drag-over"));
 }
 
-// After DOM reorder, sync allTodos data to match new order
-function commitReorder(container, type) {
+async function commitReorder(container, type) {
   if (type === "task") {
     const newOrder = [...container.querySelectorAll(":scope > li.todo")].map(
       (li) => {
@@ -398,10 +472,13 @@ function commitReorder(container, type) {
       },
     );
     allTodos = newOrder;
-    saveTodos();
+    const updates = allTodos.map((todo, i) => {
+      todo.position = i;
+      return saveTodo(todo);
+    });
+    await Promise.all(updates);
     updateTodoList();
   } else {
-    // subtask: get parentIndex from container
     const parentIndex = parseInt(container.dataset.parentIndex);
     const newOrder = [...container.querySelectorAll(":scope > li.subtask")].map(
       (li) => {
@@ -409,18 +486,7 @@ function commitReorder(container, type) {
       },
     );
     allTodos[parentIndex].subtasks = newOrder;
-    saveTodos();
+    await saveTodo(allTodos[parentIndex]);
     updateTodoList();
   }
-}
-
-// ─── STORAGE ──────────────────────────────────────────────────────────────────
-
-function saveTodos() {
-  localStorage.setItem("todos", JSON.stringify(allTodos));
-}
-
-function getTodos() {
-  const todos = localStorage.getItem("todos") || "[]";
-  return JSON.parse(todos);
 }

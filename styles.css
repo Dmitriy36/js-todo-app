@@ -340,3 +340,103 @@ form {
     padding-left: 18px;
   }
 }
+
+/* ── AUTH ───────────────────────────────────────────────────────────────────── */
+#login-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+.login-box {
+  width: 700px;
+  max-width: 100%;
+  background-color: var(--primary-color);
+  border-radius: 15px;
+  padding: 40px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.login-subtitle {
+  color: var(--secondary-color);
+  font-size: 0.85em;
+  text-align: center;
+}
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+#email-input {
+  box-sizing: border-box;
+  padding: 12px 20px;
+  width: 100%;
+  background: none;
+  border: 2px solid var(--secondary-color);
+  border-radius: 1000px;
+  font: inherit;
+  color: var(--text-color);
+  caret-color: var(--accent-color);
+}
+#email-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+#magic-link-button {
+  width: 100%;
+  padding: 14px;
+  background-color: var(--accent-color);
+  border: none;
+  border-radius: 1000px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--background);
+  cursor: pointer;
+}
+.login-message {
+  text-align: center;
+  font-size: 0.85em;
+  color: var(--accent-color);
+}
+.login-message.error {
+  color: #ff0033;
+}
+
+/* ── LOGOUT ─────────────────────────────────────────────────────────────────── */
+#logout-button {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: 1px solid var(--secondary-color);
+  border-radius: 1000px;
+  color: var(--secondary-color);
+  font: inherit;
+  font-size: 0.65em;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: 300ms ease;
+  z-index: 100;
+}
+#logout-button:hover {
+  border-color: #ff0033;
+  color: #ff0033;
+}
+
+/* ── UTILITY ─────────────────────────────────────────────────────────────────── */
+.hidden {
+  display: none !important;
+}
+
+/* ── APP WRAPPER ─────────────────────────────────────────────────────────────── */
+#app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
