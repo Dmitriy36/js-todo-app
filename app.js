@@ -31,6 +31,7 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
 
 // Manual session check on page load
 supabaseClient.auth.getSession().then(({ data: { session } }) => {
+  console.log("session check:", session);
   if (session && session.user) {
     currentUser = session.user;
     showApp();
