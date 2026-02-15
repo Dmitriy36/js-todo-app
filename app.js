@@ -60,6 +60,11 @@ const MATRIX_PHRASES = [
 const MATRIX_CHARS =
   "アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789@#$%&*";
 
+// *** TUNE MATRIX APPEARANCE HERE ***
+const MATRIX_CHAR_SIZE = 42; // character size in pixels — controls font, column width, and trail spacing
+const MATRIX_SPEED = 2; // multiplier for fall speed — lower = slower
+// *** END TUNING ***
+
 const matrixCanvas = document.getElementById("matrix-canvas");
 const matrixCtx = matrixCanvas.getContext("2d");
 let matrixColumns = [];
@@ -68,7 +73,7 @@ let matrixAnimFrame = null;
 function initMatrix() {
   matrixCanvas.width = window.innerWidth;
   matrixCanvas.height = window.innerHeight;
-  const colWidth = 20;
+  const colWidth = MATRIX_CHAR_SIZE;
   const numCols = Math.floor(matrixCanvas.width / colWidth);
   matrixColumns = Array.from({ length: numCols }, () => ({
     y: Math.random() * -matrixCanvas.height,
@@ -85,10 +90,10 @@ function drawMatrix() {
   matrixCtx.fillStyle = "rgba(0, 0, 0, 0.05)";
   matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
 
-  matrixCtx.font = "14px monospace";
+  matrixCtx.font = `${MATRIX_CHAR_SIZE}px monospace`;
 
   matrixColumns.forEach((col, i) => {
-    const x = i * 20;
+    const x = i * MATRIX_CHAR_SIZE;
     let char;
 
     if (col.phrase) {
@@ -104,9 +109,9 @@ function drawMatrix() {
 
     // Dimmer green for trail
     matrixCtx.fillStyle = "#00aa44";
-    matrixCtx.fillText(char, x, col.y - 20);
+    matrixCtx.fillText(char, x, col.y - MATRIX_CHAR_SIZE);
 
-    col.y += col.speed * 3;
+    col.y += col.speed * MATRIX_SPEED;
 
     if (col.y > matrixCanvas.height) {
       col.y = Math.random() * -200;
