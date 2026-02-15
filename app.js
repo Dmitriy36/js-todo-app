@@ -24,11 +24,29 @@ let currentUser = null;
 // then listen for changes (login/logout) separately.
 
 async function initAuth() {
-  const {
-    data: { session },
-  } = await supabaseClient.auth.getSession();
-  if (session && session.user) {
-    currentUser = session.user;
+  console.log("initAuth called");
+
+  // Check if Supabase put a session token in the URL hash after OAuth redirect
+  if (window.location.hash && window.location.hash.includes("access_token")) {
+    console.log("found access token in URL hash");
+    // Let Supabase process the hash and establish the session
+    const { data, error } = await supabaseClient.auth.getSession();
+    console.log("session from hash:", data, error);
+    if (data.session && data.session.user) {
+      // Clean up the URL
+      window.history.replaceState(null, "", window.location.pathname);
+      currentUser = data.session.user;
+      showApp();
+      await loadTodos();
+      return;
+    }
+  }
+
+  // Normal page load — check for existing session
+  const { data, error } = await supabaseClient.auth.getSession();
+  console.log("session on load:", data, error);
+  if (data && data.session && data.session.user) {
+    currentUser = data.session.user;
     showApp();
     await loadTodos();
   } else {
