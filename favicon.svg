@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Parallelogram (slanted square) background -->
+  <polygon points="20,5 90,5 80,95 10,95" fill="#1c1d20"/>
+  <!-- Checkmark in teal -->
+  <polyline points="28,52 44,68 72,32" fill="none" stroke="#00ffc4" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
