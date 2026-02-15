@@ -104,6 +104,7 @@ async function loadTodos() {
 async function saveTodo(todo) {
   const { error } = await supabaseClient.from("todos").upsert({
     id: todo.id,
+    user_id: currentUser.id,
     firebase_uid: currentUser.id,
     position: todo.position,
     text: todo.text,
