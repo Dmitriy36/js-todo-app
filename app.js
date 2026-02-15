@@ -515,4 +515,19 @@ async function commitReorder(container, type) {
     await saveTodo(allTodos[parentIndex]);
     updateTodoList();
   }
+
+  /*
+   * SERVICE WORKER REGISTRATION — Part of PWA setup.
+   * Makes the app installable on phone home screens.
+   * TO REMOVE: delete this block, sw.js, manifest.json,
+   * and the <link rel="manifest"> line in index.html.
+   */
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then(() => console.log("Service worker registered"))
+        .catch((e) => console.log("Service worker registration failed:", e));
+    });
+  }
 }

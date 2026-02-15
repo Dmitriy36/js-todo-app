@@ -1,0 +1,17 @@
+{
+  "name": "To-Do List",
+  "short_name": "To-Do",
+  "description": "Personal to-do app with subtasks and drag reordering",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#101114",
+  "theme_color": "#00ffc4",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
