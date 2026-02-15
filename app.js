@@ -29,6 +29,17 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
   }
 });
 
+// Manual session check on page load
+supabaseClient.auth.getSession().then(({ data: { session } }) => {
+  if (session && session.user) {
+    currentUser = session.user;
+    showApp();
+    loadTodos();
+  } else {
+    showLogin();
+  }
+});
+
 function showApp() {
   loginScreen.classList.add("hidden");
   appDiv.classList.remove("hidden");
