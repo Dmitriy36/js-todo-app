@@ -32,16 +32,19 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
 });
 console.log("about to call getSession");
 // Manual session check on page load
-supabaseClient.auth.getSession().then(({ data: { session } }) => {
-  console.log("session check:", session);
-  if (session && session.user) {
-    currentUser = session.user;
+
+(async () => {
+  console.log("inside async session check");
+  const { data, error } = await supabaseClient.auth.getSession();
+  console.log("session result:", data, error);
+  if (data.session && data.session.user) {
+    currentUser = data.session.user;
     showApp();
     loadTodos();
   } else {
     showLogin();
   }
-});
+})();
 
 function showApp() {
   loginScreen.classList.add("hidden");
