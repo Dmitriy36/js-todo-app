@@ -95,6 +95,7 @@ async function loadTodos() {
     .select("*")
     .eq("user_id", currentUser.id)
     .order("position", { ascending: true });
+  console.log("loadTodos result:", data, error);
   if (error) {
     console.error(error);
     return;
