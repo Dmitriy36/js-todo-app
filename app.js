@@ -33,6 +33,38 @@ const todoListUL = document.getElementById("todo-list");
 let allTodos = [];
 let currentUser = null;
 
+// ── THEME TOGGLE ──────────────────────────────────────────────────────────────
+// Toggles between dark (default) and light mode.
+// TO REMOVE: delete this block and the #theme-toggle button in index.html.
+const themeToggle = document.getElementById("theme-toggle");
+const moonIcon = document.getElementById("theme-icon-moon");
+const sunIcon = document.getElementById("theme-icon-sun");
+
+function applyTheme(theme) {
+  if (theme === "light") {
+    document.documentElement.classList.add("light");
+    moonIcon.style.display = "none";
+    sunIcon.style.display = "block";
+  } else {
+    document.documentElement.classList.remove("light");
+    moonIcon.style.display = "block";
+    sunIcon.style.display = "none";
+  }
+}
+
+// Load saved preference
+const savedTheme = localStorage.getItem("theme") || "dark";
+applyTheme(savedTheme);
+
+themeToggle.addEventListener("click", () => {
+  const current = document.documentElement.classList.contains("light")
+    ? "light"
+    : "dark";
+  const next = current === "light" ? "dark" : "light";
+  localStorage.setItem("theme", next);
+  applyTheme(next);
+});
+
 // ── AUTH ──────────────────────────────────────────────────────────────────────
 // Firebase handles session persistence automatically — no manual getSession needed.
 // onAuthStateChanged fires on page load with existing session, and on login/logout.
