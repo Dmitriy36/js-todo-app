@@ -28,19 +28,21 @@ let currentUser = null;
 // then listen for changes (login/logout) separately.
 
 async function initAuth() {
-  console.log("initAuth called");
-
-  const {
-    data: { user },
-    error,
-  } = await supabaseClient.auth.getUser();
-  console.log("getUser result:", user, error);
-
-  if (user) {
-    currentUser = user;
-    showApp();
-    await loadTodos();
-  } else {
+  try {
+    const response = await supabaseClient.auth.getUser();
+    if (
+      response &&
+      response.data &&
+      response.data.user &&
+      response.data.user.id
+    ) {
+      currentUser = response.data.user;
+      showApp();
+      loadTodos();
+    } else {
+      showLogin();
+    }
+  } catch (e) {
     showLogin();
   }
 }
