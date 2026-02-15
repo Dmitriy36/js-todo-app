@@ -46,14 +46,24 @@ firebaseAuth.onAuthStateChanged(async (user) => {
     showLogin();
   }
 });
-
+// Handle redirect result on page load
+firebaseAuth
+  .getRedirectResult()
+  .then((result) => {
+    if (result && result.user) {
+      // onAuthStateChanged will handle showing the app
+      console.log("Redirect sign-in successful");
+    }
+  })
+  .catch((e) => {
+    console.error("Redirect error:", e);
+  });
 // ── GOOGLE LOGIN ──────────────────────────────────────────────────────────────
 document
   .getElementById("google-login-button")
   .addEventListener("click", async () => {
     try {
-      await firebaseAuth.signInWithPopup(googleProvider);
-      // onAuthStateChanged will fire automatically after login
+      await firebaseAuth.signInWithRedirect(googleProvider);
     } catch (e) {
       console.error("Google login error:", e);
     }
