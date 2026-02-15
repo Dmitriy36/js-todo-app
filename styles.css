@@ -171,25 +171,46 @@ form {
   fill: #ff0033 !important;
 }
 .add-sub-button {
-  padding: 3px 6px;
-  background: none;
+  width: 32px;
+  height: 32px;
+  background-color: var(--accent-color);
   border: none;
+  border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  color: var(--secondary-color);
+  color: var(--background);
   flex-shrink: 0;
-  transition: color 300ms ease;
-  margin-right: 4px;
+  transition:
+    transform 200ms ease,
+    background-color 200ms ease;
+  margin: 0 6px;
 }
 .add-sub-button:hover {
-  color: var(--accent-color);
+  transform: scale(1.15);
+  background-color: var(--accent-color);
 }
 .add-sub-button svg {
   fill: currentColor;
 }
 
+.sub-cancel-btn {
+  padding: 6px 14px;
+  background: none;
+  border: 1px solid var(--secondary-color);
+  border-radius: 1000px;
+  font: inherit;
+  font-size: 0.75em;
+  color: var(--secondary-color);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: 300ms ease;
+}
+.sub-cancel-btn:hover {
+  border-color: #ff0033;
+  color: #ff0033;
+}
 /* ── CUSTOM CHECKBOX ───────────────────────────────────────────────────────── */
 .custom-checkbox {
   border: 3px solid var(--accent-color);

@@ -217,8 +217,12 @@ function createTodoItem(todo, todoIndex) {
   const subAddBtn = document.createElement("button");
   subAddBtn.className = "sub-add-confirm";
   subAddBtn.textContent = "ADD";
+  const subCancelBtn = document.createElement("button");
+  subCancelBtn.className = "sub-cancel-btn";
+  subCancelBtn.textContent = "✕";
   subInputRow.appendChild(subInput);
   subInputRow.appendChild(subAddBtn);
+  subInputRow.appendChild(subCancelBtn);
   todoLI.appendChild(subInputRow);
 
   addSubBtn.addEventListener("click", (e) => {
@@ -247,7 +251,10 @@ function createTodoItem(todo, todoIndex) {
     }
     if (e.key === "Escape") subInputRow.classList.add("hidden");
   });
-
+  subCancelBtn.addEventListener("click", () => {
+    subInput.value = "";
+    subInputRow.classList.add("hidden");
+  });
   deleteButton.addEventListener("click", async () => {
     await deleteTodoFromDB(todo.id);
     allTodos = allTodos.filter((_, i) => i !== todoIndex);
