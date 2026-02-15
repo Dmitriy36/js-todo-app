@@ -1,16 +1,16 @@
 :root {
-  --background-start: #001a00;
+  --background-start: #000000;
   --background-end: #000000;
-  --primary-color: #1c0a0a;
-  --secondary-color: #6b4040;
-  --accent-color: #00ffc4;
+  --primary-color: #000000;
+  --secondary-color: #006633;
+  --accent-color: #00ff88;
   --text-color: #f9f9f9;
-  --sub-bg: #160808;
+  --sub-bg: #000000;
   --sub-indent: 28px;
-  --border-color: #4a2a2a;
-  --button-face: #2a1010;
-  --button-highlight: #4a2020;
-  --button-shadow: #0a0000;
+  --border-color: #00ff88;
+  --button-face: #000000;
+  --button-highlight: #00aa44;
+  --button-shadow: #003300;
 }
 
 :root.light {

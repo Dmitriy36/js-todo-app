@@ -106,7 +106,7 @@ function drawMatrix() {
     matrixCtx.fillStyle = "#00aa44";
     matrixCtx.fillText(char, x, col.y - 20);
 
-    col.y += col.speed * 10;
+    col.y += col.speed * 3;
 
     if (col.y > matrixCanvas.height) {
       col.y = Math.random() * -200;
