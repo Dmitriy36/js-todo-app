@@ -19,33 +19,36 @@ const todoListUL = document.getElementById("todo-list");
 let allTodos = [];
 let currentUser = null;
 
-console.log("about to set up auth");
-// ── AUTH STATE ────────────────────────────────────────────────────────────────
-supabaseClient.auth.onAuthStateChange(async (event, session) => {
+// ── AUTH INIT ─────────────────────────────────────────────────────────────────
+// Single clean startup: check for existing session once on page load,
+// then listen for changes (login/logout) separately.
+
+async function initAuth() {
+  const {
+    data: { session },
+  } = await supabaseClient.auth.getSession();
   if (session && session.user) {
     currentUser = session.user;
     showApp();
     await loadTodos();
   } else {
+    showLogin();
+  }
+}
+
+// Handle login and logout events ONLY (not initial page load)
+supabaseClient.auth.onAuthStateChange(async (event, session) => {
+  if (event === "SIGNED_IN") {
+    currentUser = session.user;
+    showApp();
+    await loadTodos();
+  } else if (event === "SIGNED_OUT") {
     currentUser = null;
     showLogin();
   }
 });
-console.log("about to call getSession");
-// Manual session check on page load
 
-(async () => {
-  console.log("inside async session check");
-  const { data, error } = await supabaseClient.auth.getSession();
-  console.log("session result:", data, error);
-  if (data.session && data.session.user) {
-    currentUser = data.session.user;
-    showApp();
-    loadTodos();
-  } else {
-    showLogin();
-  }
-})();
+initAuth();
 
 function showApp() {
   loginScreen.classList.add("hidden");
