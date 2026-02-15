@@ -63,6 +63,7 @@ const MATRIX_CHARS =
 // *** TUNE MATRIX APPEARANCE HERE ***
 const MATRIX_CHAR_SIZE = 42; // character size in pixels — controls font, column width, and trail spacing
 const MATRIX_SPEED = 2; // multiplier for fall speed — lower = slower
+const MATRIX_CHAR_SPACING = 13.5;
 // *** END TUNING ***
 
 const matrixCanvas = document.getElementById("matrix-canvas");
@@ -109,9 +110,9 @@ function drawMatrix() {
 
     // Dimmer green for trail
     matrixCtx.fillStyle = "#00aa44";
-    matrixCtx.fillText(char, x, col.y - MATRIX_CHAR_SIZE);
+    matrixCtx.fillText(char, x, col.y - MATRIX_CHAR_SIZE * MATRIX_CHAR_SPACING);
 
-    col.y += col.speed * MATRIX_SPEED * 1.5;
+    col.y += col.speed * MATRIX_SPEED;
 
     if (col.y > matrixCanvas.height) {
       col.y = Math.random() * -200;
