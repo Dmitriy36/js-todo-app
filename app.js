@@ -62,8 +62,8 @@ const MATRIX_CHARS =
 
 // *** TUNE MATRIX APPEARANCE HERE ***
 const MATRIX_CHAR_SIZE = 42; // character size in pixels — controls font, column width, and trail spacing
-const MATRIX_SPEED = 2; // multiplier for fall speed — lower = slower
-const MATRIX_CHAR_SPACING = 13.5;
+const MATRIX_SPEED = 5; // multiplier for fall speed — lower = slower
+const MATRIX_CHAR_SPACING = 0.7;
 // *** END TUNING ***
 
 const matrixCanvas = document.getElementById("matrix-canvas");
@@ -71,57 +71,65 @@ const matrixCtx = matrixCanvas.getContext("2d");
 let matrixColumns = [];
 let matrixAnimFrame = null;
 
+function getRandomChar() {
+  return MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
+}
+
 function initMatrix() {
   matrixCanvas.width = window.innerWidth;
   matrixCanvas.height = window.innerHeight;
-  const colWidth = MATRIX_CHAR_SIZE;
-  const numCols = Math.floor(matrixCanvas.width / colWidth);
-  matrixColumns = Array.from({ length: numCols }, () => ({
-    y: Math.random() * -matrixCanvas.height,
-    speed: 1 + Math.random() * 2,
-    phrase:
-      Math.random() > 0.7
-        ? MATRIX_PHRASES[Math.floor(Math.random() * MATRIX_PHRASES.length)]
-        : null,
-    charIndex: 0,
-  }));
+  const numCols = Math.floor(matrixCanvas.width / MATRIX_CHAR_SIZE);
+  matrixColumns = Array.from({ length: numCols }, (_, i) => {
+    const usePhrase = Math.random() > 0.3;
+    const source = usePhrase
+      ? MATRIX_PHRASES[Math.floor(Math.random() * MATRIX_PHRASES.length)]
+      : null;
+    const numChars = source ? source.length : 8;
+    return {
+      x: i * MATRIX_CHAR_SIZE,
+      chars: Array.from({ length: numChars }, (_, j) => ({
+        char: source ? source[j] : getRandomChar(),
+        yOffset: j * MATRIX_CHAR_SIZE * MATRIX_CHAR_SPACING,
+      })),
+      y: Math.random() * -(matrixCanvas.height * 2),
+      speed: 0.3 + Math.random() * 0.4,
+    };
+  });
 }
 
 function drawMatrix() {
-  matrixCtx.fillStyle = "rgba(0, 0, 0, 0.05)";
-  matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
-
+  matrixCtx.clearRect(0, 0, matrixCanvas.width, matrixCanvas.height);
   matrixCtx.font = `${MATRIX_CHAR_SIZE}px monospace`;
 
-  matrixColumns.forEach((col, i) => {
-    const x = i * MATRIX_CHAR_SIZE;
-    let char;
-
-    if (col.phrase) {
-      char = col.phrase[col.charIndex % col.phrase.length];
-      col.charIndex++;
-    } else {
-      char = MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
-    }
-
-    // Bright green for the leading character
-    matrixCtx.fillStyle = "#00ff88";
-    matrixCtx.fillText(char, x, col.y);
-
-    // Dimmer green for trail
-    matrixCtx.fillStyle = "#00aa44";
-    matrixCtx.fillText(char, x, col.y - MATRIX_CHAR_SIZE * MATRIX_CHAR_SPACING);
+  matrixColumns.forEach((col) => {
+    col.chars.forEach((item, i) => {
+      const y = col.y + item.yOffset;
+      if (y < 0 || y > matrixCanvas.height) return;
+      // Leading character is bright
+      if (i === 0) {
+        matrixCtx.fillStyle = "#00ff88";
+      } else {
+        // Fade out toward tail
+        const alpha = 1 - (i / col.chars.length) * 0.8;
+        matrixCtx.fillStyle = `rgba(0, 170, 68, ${alpha})`;
+      }
+      matrixCtx.fillText(item.char, col.x, y);
+    });
 
     col.y += col.speed * MATRIX_SPEED;
 
-    if (col.y > matrixCanvas.height) {
-      col.y = Math.random() * -200;
-      col.speed = 1 + Math.random() * 2;
-      col.phrase =
-        Math.random() > 0.7
-          ? MATRIX_PHRASES[Math.floor(Math.random() * MATRIX_PHRASES.length)]
-          : null;
-      col.charIndex = 0;
+    // Reset column when it scrolls off screen
+    if (col.y > matrixCanvas.height + matrixCanvas.height * 0.5) {
+      col.y = Math.random() * -300;
+      const usePhrase = Math.random() > 0.3;
+      const source = usePhrase
+        ? MATRIX_PHRASES[Math.floor(Math.random() * MATRIX_PHRASES.length)]
+        : null;
+      const numChars = source ? source.length : 8;
+      col.chars = Array.from({ length: numChars }, (_, j) => ({
+        char: source ? source[j] : getRandomChar(),
+        yOffset: j * MATRIX_CHAR_SIZE * MATRIX_CHAR_SPACING,
+      }));
     }
   });
 
