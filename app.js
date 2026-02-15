@@ -3,7 +3,7 @@ const SUPABASE_URL = "https://bkssvocrrtsrvixsdips.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_jTvQT_2bWNqjExhXJsgzwQ_6pZpbQZy";
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+console.log("supabase client created:", supabaseClient);
 // ── UI ELEMENTS ───────────────────────────────────────────────────────────────
 const loginScreen = document.getElementById("login-screen");
 const appDiv = document.getElementById("app");
