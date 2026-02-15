@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>To-Do List</title>
     <link rel="stylesheet" href="styles.css" />
+    <!-- Firebase CDN -->
+    <script
+      src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"
+      defer
+    ></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"
+      defer
+    ></script>
+    <!-- Supabase CDN (database only) -->
     <script
       src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"
       defer
@@ -19,7 +29,6 @@
   </head>
   <body>
     <h1>To-Do List</h1>
-
     <!-- Login Screen -->
     <div id="login-screen">
       <div class="login-box">
@@ -52,7 +61,6 @@
         </button>
       </div>
     </div>
-
     <!-- Todo App (hidden until logged in) -->
     <div id="app" class="hidden">
       <button id="logout-button">Log out</button>

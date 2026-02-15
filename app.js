@@ -1,14 +1,28 @@
-console.log("app.js loaded");
+// ── FIREBASE CONFIG ───────────────────────────────────────────────────────────
+// Firebase handles authentication (Google sign-in).
+// TO REMOVE FIREBASE: delete these config lines, the firebase CDN scripts in
+// index.html, and replace the auth section below with your preferred auth.
+const firebaseConfig = {
+  apiKey: "AIzaSyAFKHwUALHoy3tSsdJKHq7Rn8PpxpYtu6w",
+  authDomain: "todo-app-487519.firebaseapp.com",
+  projectId: "todo-app-487519",
+  storageBucket: "todo-app-487519.firebasestorage.app",
+  messagingSenderId: "111792919136",
+  appId: "1:111792919136:web:25aea116a101e965cf6905",
+};
+firebase.initializeApp(firebaseConfig);
+const firebaseAuth = firebase.auth();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+// ── SUPABASE CONFIG ───────────────────────────────────────────────────────────
+// Supabase is used as the database only — NOT for authentication.
+// TO REMOVE SUPABASE: delete these lines, the Supabase CDN in index.html,
+// and replace loadTodos/saveTodo/deleteTodoFromDB with your preferred database.
 const SUPABASE_URL = "https://bkssvocrrtsrvixsdips.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJrc3N2b2NycnRzcnZpeHNkaXBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExMjExMjAsImV4cCI6MjA4NjY5NzEyMH0.tU-Mhl-GJonpuLcv4oTr2nW0cLO1ggJxEr88oPKDCv4";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    clockSkewInSeconds: 7200,
-  },
-});
-console.log("supabase client created:", supabaseClient);
 // ── UI ELEMENTS ───────────────────────────────────────────────────────────────
 const loginScreen = document.getElementById("login-screen");
 const appDiv = document.getElementById("app");
@@ -16,53 +30,45 @@ const logoutButton = document.getElementById("logout-button");
 const todoForm = document.querySelector("form");
 const todoInput = document.getElementById("todo-input");
 const todoListUL = document.getElementById("todo-list");
-
 let allTodos = [];
 let currentUser = null;
 
-// ── AUTH INIT ─────────────────────────────────────────────────────────────────
-// Single clean startup: check for existing session once on page load,
-// then listen for changes (login/logout) separately.
-
-async function initAuth() {
-  try {
-    const response = await supabaseClient.auth.getUser();
-    if (
-      response &&
-      response.data &&
-      response.data.user &&
-      response.data.user.id
-    ) {
-      currentUser = response.data.user;
-      showApp();
-      loadTodos();
-    } else {
-      showLogin();
-    }
-  } catch (e) {
-    showLogin();
-  }
-}
-
-initAuth();
-
-// Handle login and logout events ONLY (not initial page load)
-supabaseClient.auth.onAuthStateChange(async (event, session) => {
-  if (event === "SIGNED_IN") {
-    currentUser = session.user;
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+// Firebase handles session persistence automatically — no manual getSession needed.
+// onAuthStateChanged fires on page load with existing session, and on login/logout.
+firebaseAuth.onAuthStateChanged(async (user) => {
+  if (user) {
+    currentUser = { id: user.uid, email: user.email };
     showApp();
     await loadTodos();
-  } else if (event === "SIGNED_OUT") {
+  } else {
     currentUser = null;
     showLogin();
   }
 });
 
+// ── GOOGLE LOGIN ──────────────────────────────────────────────────────────────
+document
+  .getElementById("google-login-button")
+  .addEventListener("click", async () => {
+    try {
+      await firebaseAuth.signInWithPopup(googleProvider);
+      // onAuthStateChanged will fire automatically after login
+    } catch (e) {
+      console.error("Google login error:", e);
+    }
+  });
+
+// ── LOGOUT ────────────────────────────────────────────────────────────────────
+logoutButton.addEventListener("click", async () => {
+  await firebaseAuth.signOut();
+});
+
+// ── SHOW/HIDE ─────────────────────────────────────────────────────────────────
 function showApp() {
   loginScreen.classList.add("hidden");
   appDiv.classList.remove("hidden");
 }
-
 function showLogin() {
   appDiv.classList.add("hidden");
   loginScreen.classList.remove("hidden");
@@ -70,33 +76,13 @@ function showLogin() {
   todoListUL.innerHTML = "";
 }
 
-// ── MAGIC LINK ────────────────────────────────────────────────────────────────
-// ── GOOGLE LOGIN ──────────────────────────────────────────────────────────────
-document
-  .getElementById("google-login-button")
-  .addEventListener("click", async () => {
-    const { error } = await supabaseClient.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: "https://todo.martian-buddy.com" },
-    });
-    if (error) console.error("Google login error:", error);
-  });
-
-// ── LOGOUT ────────────────────────────────────────────────────────────────────
-logoutButton.addEventListener("click", async () => {
-  await supabaseClient.auth.signOut();
-});
-
 // ── TODOS ─────────────────────────────────────────────────────────────────────
 async function loadTodos() {
-  console.log("loadTodos called, user id:", currentUser.id);
-  console.log("loadTodos called, user:", currentUser);
   const { data, error } = await supabaseClient
     .from("todos")
     .select("*")
-    .eq("user_id", currentUser.id)
+    .eq("firebase_uid", currentUser.id)
     .order("position", { ascending: true });
-  console.log("loadTodos result:", data, error);
   if (error) {
     console.error(error);
     return;
@@ -108,7 +94,7 @@ async function loadTodos() {
 async function saveTodo(todo) {
   const { error } = await supabaseClient.from("todos").upsert({
     id: todo.id,
-    user_id: currentUser.id,
+    firebase_uid: currentUser.id,
     position: todo.position,
     text: todo.text,
     completed: todo.completed,
@@ -133,7 +119,7 @@ async function addTodo() {
   if (todoText.length > 0) {
     const newTodo = {
       id: crypto.randomUUID(),
-      user_id: currentUser.id,
+      firebase_uid: currentUser.id,
       text: todoText,
       completed: false,
       subtasks: [],
