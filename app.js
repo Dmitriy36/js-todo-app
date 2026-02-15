@@ -89,6 +89,7 @@ logoutButton.addEventListener("click", async () => {
 
 // ── TODOS ─────────────────────────────────────────────────────────────────────
 async function loadTodos() {
+  console.log("loadTodos called, user:", currentUser);
   const { data, error } = await supabaseClient
     .from("todos")
     .select("*")
