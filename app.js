@@ -44,6 +44,8 @@ async function initAuth() {
   }
 }
 
+initAuth();
+
 // Handle login and logout events ONLY (not initial page load)
 supabaseClient.auth.onAuthStateChange(async (event, session) => {
   if (event === "SIGNED_IN") {
@@ -55,8 +57,6 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
     showLogin();
   }
 });
-
-initAuth();
 
 function showApp() {
   loginScreen.classList.add("hidden");
