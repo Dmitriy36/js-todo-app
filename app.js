@@ -18,6 +18,7 @@ const todoListUL = document.getElementById("todo-list");
 let allTodos = [];
 let currentUser = null;
 
+console.log("about to set up auth");
 // ── AUTH STATE ────────────────────────────────────────────────────────────────
 supabaseClient.auth.onAuthStateChange(async (event, session) => {
   if (session && session.user) {
@@ -29,7 +30,7 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
     showLogin();
   }
 });
-
+console.log("about to call getSession");
 // Manual session check on page load
 supabaseClient.auth.getSession().then(({ data: { session } }) => {
   console.log("session check:", session);
