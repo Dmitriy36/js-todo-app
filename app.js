@@ -63,37 +63,16 @@ function showLogin() {
 }
 
 // ── MAGIC LINK ────────────────────────────────────────────────────────────────
-magicLinkButton.addEventListener("click", async () => {
-  const email = emailInput.value.trim();
-  if (!email) {
-    showMessage("Please enter your email address.", true);
-    return;
-  }
-  magicLinkButton.disabled = true;
-  magicLinkButton.textContent = "SENDING...";
-  const { error } = await supabaseClient.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: "https://todo.martian-buddy.com" },
+// ── GOOGLE LOGIN ──────────────────────────────────────────────────────────────
+document
+  .getElementById("google-login-button")
+  .addEventListener("click", async () => {
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: "https://todo.martian-buddy.com" },
+    });
+    if (error) console.error("Google login error:", error);
   });
-  if (error) {
-    showMessage(error.message, true);
-    magicLinkButton.disabled = false;
-    magicLinkButton.textContent = "SEND MAGIC LINK";
-  } else {
-    showMessage("✓ Check your email for a login link!", false);
-    magicLinkButton.textContent = "SENT!";
-  }
-});
-
-emailInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") magicLinkButton.click();
-});
-
-function showMessage(text, isError) {
-  loginMessage.textContent = text;
-  loginMessage.classList.remove("hidden", "error");
-  if (isError) loginMessage.classList.add("error");
-}
 
 // ── LOGOUT ────────────────────────────────────────────────────────────────────
 logoutButton.addEventListener("click", async () => {
