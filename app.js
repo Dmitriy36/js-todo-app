@@ -1,3 +1,4 @@
+console.log("app.js loaded");
 const SUPABASE_URL = "https://bkssvocrrtsrvixsdips.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_jTvQT_2bWNqjExhXJsgzwQ_6pZpbQZy";
 
