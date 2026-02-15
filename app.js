@@ -5,7 +5,7 @@ const SUPABASE_ANON_KEY =
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    clockSkewInSeconds: 300,
+    clockSkewInSeconds: 7200,
   },
 });
 console.log("supabase client created:", supabaseClient);
