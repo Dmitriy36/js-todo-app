@@ -3,7 +3,11 @@ const SUPABASE_URL = "https://bkssvocrrtsrvixsdips.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJrc3N2b2NycnRzcnZpeHNkaXBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExMjExMjAsImV4cCI6MjA4NjY5NzEyMH0.tU-Mhl-GJonpuLcv4oTr2nW0cLO1ggJxEr88oPKDCv4";
 
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    clockSkewInSeconds: 300,
+  },
+});
 console.log("supabase client created:", supabaseClient);
 // ── UI ELEMENTS ───────────────────────────────────────────────────────────────
 const loginScreen = document.getElementById("login-screen");
