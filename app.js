@@ -154,9 +154,6 @@ window.addEventListener("resize", () => {
   }
 });
 
-// Start if dark mode is active
-updateMatrix(savedTheme);
-
 // ── THEME TOGGLE ──────────────────────────────────────────────────────────────
 // Toggles between dark (default) and light mode.
 // TO REMOVE: delete this block and the #theme-toggle button in index.html.
