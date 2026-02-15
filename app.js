@@ -33,6 +33,130 @@ const todoListUL = document.getElementById("todo-list");
 let allTodos = [];
 let currentUser = null;
 
+// ── MATRIX RAIN ───────────────────────────────────────────────────────────────
+// Animated Matrix-style falling text in the background.
+// Only visible in dark mode.
+// TO REMOVE: delete this block and <canvas id="matrix-canvas"> in index.html.
+//
+// *** EDIT YOUR CUSTOM PHRASES HERE: ***
+const MATRIX_PHRASES = [
+  "so many tasks...",
+  "why did I add this",
+  "I'll never finish",
+  "oh so many things to do",
+  "maybe tomorrow",
+  "this won't take long",
+  "I'll do it later",
+  "how is it still not done",
+  "just one more task",
+  "send help",
+  "prioritize!",
+  "focus...",
+  "oh no",
+];
+// *** END OF CUSTOM PHRASES ***
+
+// Classic Matrix katakana and symbols mixed in
+const MATRIX_CHARS =
+  "アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789@#$%&*";
+
+const matrixCanvas = document.getElementById("matrix-canvas");
+const matrixCtx = matrixCanvas.getContext("2d");
+let matrixColumns = [];
+let matrixAnimFrame = null;
+
+function initMatrix() {
+  matrixCanvas.width = window.innerWidth;
+  matrixCanvas.height = window.innerHeight;
+  const colWidth = 20;
+  const numCols = Math.floor(matrixCanvas.width / colWidth);
+  matrixColumns = Array.from({ length: numCols }, () => ({
+    y: Math.random() * -matrixCanvas.height,
+    speed: 1 + Math.random() * 2,
+    phrase:
+      Math.random() > 0.7
+        ? MATRIX_PHRASES[Math.floor(Math.random() * MATRIX_PHRASES.length)]
+        : null,
+    charIndex: 0,
+  }));
+}
+
+function drawMatrix() {
+  matrixCtx.fillStyle = "rgba(0, 0, 0, 0.05)";
+  matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+
+  matrixCtx.font = "14px monospace";
+
+  matrixColumns.forEach((col, i) => {
+    const x = i * 20;
+    let char;
+
+    if (col.phrase) {
+      char = col.phrase[col.charIndex % col.phrase.length];
+      col.charIndex++;
+    } else {
+      char = MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
+    }
+
+    // Bright green for the leading character
+    matrixCtx.fillStyle = "#00ff88";
+    matrixCtx.fillText(char, x, col.y);
+
+    // Dimmer green for trail
+    matrixCtx.fillStyle = "#00aa44";
+    matrixCtx.fillText(char, x, col.y - 20);
+
+    col.y += col.speed * 10;
+
+    if (col.y > matrixCanvas.height) {
+      col.y = Math.random() * -200;
+      col.speed = 1 + Math.random() * 2;
+      col.phrase =
+        Math.random() > 0.7
+          ? MATRIX_PHRASES[Math.floor(Math.random() * MATRIX_PHRASES.length)]
+          : null;
+      col.charIndex = 0;
+    }
+  });
+
+  matrixAnimFrame = requestAnimationFrame(drawMatrix);
+}
+
+function startMatrix() {
+  if (matrixAnimFrame) return;
+  initMatrix();
+  drawMatrix();
+  matrixCanvas.style.display = "block";
+}
+
+function stopMatrix() {
+  if (matrixAnimFrame) {
+    cancelAnimationFrame(matrixAnimFrame);
+    matrixAnimFrame = null;
+  }
+  matrixCtx.clearRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+  matrixCanvas.style.display = "none";
+}
+
+// Start or stop based on current theme
+function updateMatrix(theme) {
+  if (theme === "dark") {
+    startMatrix();
+  } else {
+    stopMatrix();
+  }
+}
+
+// Re-init on window resize
+window.addEventListener("resize", () => {
+  if (!document.documentElement.classList.contains("light")) {
+    initMatrix();
+  }
+});
+
+// Start if dark mode is active
+updateMatrix(savedTheme);
+
 // ── THEME TOGGLE ──────────────────────────────────────────────────────────────
 // Toggles between dark (default) and light mode.
 // TO REMOVE: delete this block and the #theme-toggle button in index.html.
@@ -50,6 +174,7 @@ function applyTheme(theme) {
     moonIcon.style.display = "block";
     sunIcon.style.display = "none";
   }
+  updateMatrix(theme);
 }
 
 // Load saved preference

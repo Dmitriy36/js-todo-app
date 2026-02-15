@@ -1,5 +1,5 @@
 :root {
-  --background-start: #1a0000;
+  --background-start: #001a00;
   --background-end: #000000;
   --primary-color: #1c0a0a;
   --secondary-color: #6b4040;
@@ -530,4 +530,17 @@ form {
   flex-direction: column;
   align-items: center;
   width: 100%;
+}
+/* ── MATRIX CANVAS ───────────────────────────────────────────────────────────
+   Full-screen background animation. TO REMOVE: delete this block and the
+   <canvas id="matrix-canvas"> element in index.html, and the matrix code
+   in app.js. */
+#matrix-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 0.18;
 }
