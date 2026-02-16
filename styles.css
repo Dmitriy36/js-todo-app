@@ -155,7 +155,7 @@ form {
 /* ── TASK ITEM ─────────────────────────────────────────────────────────────── */
 .todo {
   margin-bottom: 10px;
-  padding: 0 16px;
+  padding: 0 8px;
   background-color: var(--primary-color);
   border: 2px solid var(--border-color);
   border-radius: 0;
@@ -174,6 +174,23 @@ form {
 }
 .todo.drag-over {
   box-shadow: 0 -3px 0 0 var(--accent-color);
+}
+
+/* ── TASK LEFT / RIGHT COLUMNS ───────────────────────────────────────────── */
+.todo-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.todo-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 0 8px 8px;
+  flex-shrink: 0;
 }
 
 /* ── DRAG HANDLE ───────────────────────────────────────────────────────────── */
@@ -203,7 +220,7 @@ form {
   color: var(--secondary-color);
   min-width: 26px;
   flex-shrink: 0;
-  margin-right: 4px;
+  margin-right: 2px;
 }
 .task-number--sub {
   font-size: 0.75em;

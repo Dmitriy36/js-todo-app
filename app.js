@@ -352,13 +352,21 @@ function createTodoItem(todo, todoIndex) {
   deleteButton.className = "delete-button";
   deleteButton.innerHTML = `<svg fill="var(--secondary-color)" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>`;
 
-  todoLI.appendChild(dragHandle);
-  todoLI.appendChild(numberLabel);
-  todoLI.appendChild(checkbox);
-  todoLI.appendChild(customCheckbox);
-  todoLI.appendChild(textLabel);
-  todoLI.appendChild(addSubBtn);
-  todoLI.appendChild(deleteButton);
+  const todoLeft = document.createElement("div");
+  todoLeft.className = "todo-left";
+  todoLeft.appendChild(dragHandle);
+  todoLeft.appendChild(numberLabel);
+  todoLeft.appendChild(checkbox);
+  todoLeft.appendChild(customCheckbox);
+  todoLeft.appendChild(textLabel);
+
+  const todoRight = document.createElement("div");
+  todoRight.className = "todo-right";
+  todoRight.appendChild(addSubBtn);
+  todoRight.appendChild(deleteButton);
+
+  todoLI.appendChild(todoLeft);
+  todoLI.appendChild(todoRight);
 
   if (!todo.subtasks) todo.subtasks = [];
   if (todo.subtasks.length > 0) {
