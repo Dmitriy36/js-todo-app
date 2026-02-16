@@ -176,23 +176,6 @@ form {
   box-shadow: 0 -3px 0 0 var(--accent-color);
 }
 
-/* ── TASK LEFT / RIGHT COLUMNS ───────────────────────────────────────────── */
-.todo-left {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  min-width: 0;
-}
-.todo-right {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 4px 0 4px 8px;
-  flex-shrink: 0;
-}
-
 /* ── DRAG HANDLE ───────────────────────────────────────────────────────────── */
 .drag-handle {
   display: flex;
