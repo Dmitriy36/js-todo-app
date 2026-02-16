@@ -519,7 +519,7 @@ function setupDraggable(item, container, type) {
     if (!dragging) return;
     const target = getDragTarget(e.clientY, container, type);
     removeDropIndicators();
-    if (target) target.classList.add("drag-over");
+    if (target) target.element.classList.add("drag-over");
   });
 
   container.addEventListener("drop", (e) => {
@@ -529,18 +529,11 @@ function setupDraggable(item, container, type) {
     if (!dragging) return;
     const target = getDragTarget(e.clientY, container, type);
     removeDropIndicators();
-    if (target && target !== dragging) {
-      const items = [
-        ...container.querySelectorAll(
-          type === "task" ? ":scope > li.todo" : ":scope > li.subtask",
-        ),
-      ];
-      const fromIdx = items.indexOf(dragging);
-      const toIdx = items.indexOf(target);
-      if (fromIdx < toIdx) {
-        container.insertBefore(dragging, target.nextSibling);
+    if (target && target.element !== dragging) {
+      if (target.before) {
+        container.insertBefore(dragging, target.element);
       } else {
-        container.insertBefore(dragging, target);
+        container.insertBefore(dragging, target.element.nextSibling);
       }
     }
   });
@@ -591,18 +584,11 @@ function setupDraggable(item, container, type) {
     const touch = e.changedTouches[0];
     removeDropIndicators();
     const target = getDragTarget(touch.clientY, container, type);
-    if (target && target !== item) {
-      const items = [
-        ...container.querySelectorAll(
-          type === "task" ? ":scope > li.todo" : ":scope > li.subtask",
-        ),
-      ];
-      const fromIdx = items.indexOf(item);
-      const toIdx = items.indexOf(target);
-      if (fromIdx < toIdx) {
-        container.insertBefore(item, target.nextSibling);
+    if (target && target.element !== item) {
+      if (target.before) {
+        container.insertBefore(item, target.element);
       } else {
-        container.insertBefore(item, target);
+        container.insertBefore(item, target.element.nextSibling);
       }
     }
     item.classList.remove("dragging");
@@ -618,17 +604,15 @@ function getDragTarget(clientY, container, type) {
       ? ":scope > li.todo:not(.dragging)"
       : ":scope > li.subtask:not(.dragging)";
   const items = [...container.querySelectorAll(selector)];
-  return (
-    items.reduce((closest, child) => {
-      const box = child.getBoundingClientRect();
-      const midpoint = box.top + box.height / 2;
-      const offset = clientY - midpoint;
-      if (offset > (closest.offset ?? -Infinity)) {
-        return { offset, element: child };
-      }
-      return closest;
-    }, {}).element || items[0]
-  );
+
+  for (const item of items) {
+    const box = item.getBoundingClientRect();
+    const midpoint = box.top + box.height / 2;
+    if (clientY < midpoint) {
+      return { element: item, before: true };
+    }
+  }
+  return { element: items[items.length - 1], before: false };
 }
 
 function removeDropIndicators() {
