@@ -386,8 +386,8 @@ form {
   width: 100%;
   padding: 4px 0 8px var(--sub-indent);
   box-sizing: border-box;
-  border-left: none; /* 2px solid var(--secondary-color); */
-  margin-left: var(--sub-indent); /* calc(var(--sub-indent) - 2px); */
+  border-left: 2px solid var(--secondary-color); /* none; */
+  margin-left: calc(var(--sub-indent) - 2px); /* var(--sub-indent); */
 }
 
 /* ── SUBTASK ITEM ──────────────────────────────────────────────────────────── */
