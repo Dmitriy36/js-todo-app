@@ -216,14 +216,14 @@ form {
 
 /* ── TASK NUMBER ───────────────────────────────────────────────────────────── */
 .task-number {
-  font-size: 0.8em;
+  font-size: 1em;
   color: var(--secondary-color);
   min-width: 26px;
   flex-shrink: 0;
   margin-right: 2px;
 }
 .task-number--sub {
-  font-size: 0.75em;
+  font-size: 0.72em;
   min-width: 22px;
 }
 

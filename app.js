@@ -451,7 +451,7 @@ function createSubtaskItem(sub, parentIndex, subIndex) {
 
   const numberLabel = document.createElement("span");
   numberLabel.className = "task-number task-number--sub";
-  numberLabel.textContent = subIndex + 1 + ".";
+  numberLabel.textContent = String.fromCharCode(97 + subIndex) + ".";
 
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
