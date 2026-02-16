@@ -623,11 +623,11 @@ function getDragTarget(clientY, container, type) {
       const box = child.getBoundingClientRect();
       const midpoint = box.top + box.height / 2;
       const offset = clientY - midpoint;
-      if (offset < 0 && offset > (closest.offset ?? -Infinity)) {
+      if (offset > (closest.offset ?? -Infinity)) {
         return { offset, element: child };
       }
       return closest;
-    }, {}).element || items[items.length - 1]
+    }, {}).element || items[0]
   );
 }
 
