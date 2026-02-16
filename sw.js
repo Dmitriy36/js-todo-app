@@ -25,9 +25,3 @@ self.addEventListener("install", (e) => {
 self.addEventListener("activate", (e) => {
   self.clients.claim();
 });
-
-// Currently no caching — app always fetches fresh from network.
-// Offline support can be added here later if needed.
-self.addEventListener("fetch", (e) => {
-  e.respondWith(fetch(e.request));
-});
