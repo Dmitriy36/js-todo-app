@@ -169,9 +169,6 @@ form {
   user-select: none;
   -webkit-user-select: none;
 }
-.todo > .todo-text {
-  min-width: 0;
-}
 .todo.dragging {
   opacity: 0.4;
 }
@@ -645,4 +642,12 @@ form {
 .rename-cancel:active {
   border-color: var(--button-shadow) var(--button-highlight)
     var(--button-highlight) var(--button-shadow);
+}
+/* ── MAIN ROW ────────────────────────────────────────────────────────────────── */
+.todo-main-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
 }
