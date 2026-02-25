@@ -480,31 +480,6 @@ function createTodoItem(todo, todoIndex) {
     enterRenameModeForTodo();
   });
 
-  // Long-press on text label (mobile rename)
-  let renamePressTimer = null;
-  textLabel.addEventListener(
-    "touchstart",
-    (e) => {
-      renamePressTimer = setTimeout(() => {
-        renamePressTimer = null;
-        enterRenameModeForTodo();
-      }, 500);
-    },
-    { passive: true },
-  );
-  textLabel.addEventListener("touchend", () => {
-    if (renamePressTimer) {
-      clearTimeout(renamePressTimer);
-      renamePressTimer = null;
-    }
-  });
-  textLabel.addEventListener("touchmove", () => {
-    if (renamePressTimer) {
-      clearTimeout(renamePressTimer);
-      renamePressTimer = null;
-    }
-  });
-
   deleteButton.addEventListener("click", async () => {
     await deleteTodoFromDB(todo.id);
     allTodos = allTodos.filter((_, i) => i !== todoIndex);
@@ -607,30 +582,6 @@ function createSubtaskItem(sub, parentIndex, subIndex) {
   renameBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     enterRenameModeForSub();
-  });
-
-  let renamePressTimer = null;
-  textLabel.addEventListener(
-    "touchstart",
-    (e) => {
-      renamePressTimer = setTimeout(() => {
-        renamePressTimer = null;
-        enterRenameModeForSub();
-      }, 500);
-    },
-    { passive: true },
-  );
-  textLabel.addEventListener("touchend", () => {
-    if (renamePressTimer) {
-      clearTimeout(renamePressTimer);
-      renamePressTimer = null;
-    }
-  });
-  textLabel.addEventListener("touchmove", () => {
-    if (renamePressTimer) {
-      clearTimeout(renamePressTimer);
-      renamePressTimer = null;
-    }
   });
 
   deleteBtn.addEventListener("click", async () => {

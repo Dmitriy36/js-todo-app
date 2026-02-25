@@ -454,6 +454,9 @@ form {
   .sub-input-row {
     padding-left: 18px;
   }
+  .rename-btn {
+    display: flex;
+  }
 }
 
 /* ── AUTH ───────────────────────────────────────────────────────────────────── */
