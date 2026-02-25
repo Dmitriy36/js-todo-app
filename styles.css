@@ -169,6 +169,9 @@ form {
   user-select: none;
   -webkit-user-select: none;
 }
+.todo > .todo-text {
+  min-width: 0;
+}
 .todo.dragging {
   opacity: 0.4;
 }
