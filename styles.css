@@ -555,3 +555,86 @@ form {
   z-index: -1;
   opacity: 0.45;
 }
+
+/* ── RENAME ──────────────────────────────────────────────────────────────────── */
+.rename-btn {
+  display: none;
+  background: none;
+  border: none;
+  padding: 3px 6px;
+  cursor: pointer;
+  color: var(--secondary-color);
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  transition: color 200ms ease;
+}
+.rename-btn svg {
+  display: block;
+}
+.rename-btn:hover {
+  color: var(--accent-color);
+}
+.todo:hover .rename-btn {
+  display: flex;
+}
+.subtask:hover .rename-btn {
+  display: flex;
+}
+.rename-btn--sub {
+  padding: 2px 4px;
+}
+.rename-input {
+  flex: 1;
+  padding: 8px 14px;
+  background: var(--sub-bg);
+  border: 2px solid;
+  border-color: var(--button-shadow) var(--button-highlight)
+    var(--button-highlight) var(--button-shadow);
+  border-radius: 0;
+  font: inherit;
+  color: var(--text-color);
+  caret-color: var(--accent-color);
+  min-width: 0;
+}
+.rename-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+.rename-input--sub {
+  font-size: 0.85em;
+  padding: 5px 10px;
+}
+.rename-confirm,
+.rename-cancel {
+  padding: 6px 14px;
+  background-color: var(--button-face);
+  border: 2px solid;
+  border-color: var(--button-highlight) var(--button-shadow)
+    var(--button-shadow) var(--button-highlight);
+  border-radius: 0;
+  font: inherit;
+  font-size: 0.75em;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.rename-confirm {
+  color: var(--accent-color);
+}
+.rename-cancel {
+  color: var(--text-color);
+}
+.rename-confirm:hover {
+  color: var(--accent-color);
+  filter: brightness(1.3);
+}
+.rename-cancel:hover {
+  color: #ff0033;
+}
+.rename-confirm:active,
+.rename-cancel:active {
+  border-color: var(--button-shadow) var(--button-highlight)
+    var(--button-highlight) var(--button-shadow);
+}

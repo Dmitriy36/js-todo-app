@@ -343,6 +343,11 @@ function createTodoItem(todo, todoIndex) {
   textLabel.className = "todo-text";
   textLabel.textContent = todo.text;
 
+  const renameBtn = document.createElement("button");
+  renameBtn.className = "rename-btn";
+  renameBtn.title = "Rename";
+  renameBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg>`;
+
   const addSubBtn = document.createElement("button");
   addSubBtn.className = "add-sub-button";
   addSubBtn.title = "Add subtask";
@@ -357,6 +362,7 @@ function createTodoItem(todo, todoIndex) {
   todoLI.appendChild(checkbox);
   todoLI.appendChild(customCheckbox);
   todoLI.appendChild(textLabel);
+  todoLI.appendChild(renameBtn);
   todoLI.appendChild(addSubBtn);
   todoLI.appendChild(deleteButton);
 
@@ -421,6 +427,84 @@ function createTodoItem(todo, todoIndex) {
     subInput.value = "";
     subInputRow.classList.add("hidden");
   });
+  // ── RENAME (todo) ──────────────────────────────────────────────────────────
+  function enterRenameModeForTodo() {
+    const current = allTodos[todoIndex].text;
+    textLabel.style.display = "none";
+    renameBtn.style.display = "none";
+
+    const renameInput = document.createElement("input");
+    renameInput.type = "text";
+    renameInput.className = "rename-input";
+    renameInput.value = current;
+
+    const confirmBtn = document.createElement("button");
+    confirmBtn.className = "rename-confirm";
+    confirmBtn.textContent = "✓";
+
+    const cancelBtn = document.createElement("button");
+    cancelBtn.className = "rename-cancel";
+    cancelBtn.textContent = "✕";
+
+    textLabel.insertAdjacentElement("afterend", cancelBtn);
+    textLabel.insertAdjacentElement("afterend", confirmBtn);
+    textLabel.insertAdjacentElement("afterend", renameInput);
+    renameInput.focus();
+    renameInput.select();
+
+    async function confirmRename() {
+      const newText = renameInput.value.trim();
+      if (newText.length > 0 && newText !== current) {
+        allTodos[todoIndex].text = newText;
+        await saveTodo(allTodos[todoIndex]);
+      }
+      updateTodoList();
+    }
+    function cancelRename() {
+      updateTodoList();
+    }
+
+    confirmBtn.addEventListener("click", confirmRename);
+    cancelBtn.addEventListener("click", cancelRename);
+    renameInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        confirmRename();
+      }
+      if (e.key === "Escape") cancelRename();
+    });
+  }
+
+  renameBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    enterRenameModeForTodo();
+  });
+
+  // Long-press on text label (mobile rename)
+  let renamePressTimer = null;
+  textLabel.addEventListener(
+    "touchstart",
+    (e) => {
+      renamePressTimer = setTimeout(() => {
+        renamePressTimer = null;
+        enterRenameModeForTodo();
+      }, 500);
+    },
+    { passive: true },
+  );
+  textLabel.addEventListener("touchend", () => {
+    if (renamePressTimer) {
+      clearTimeout(renamePressTimer);
+      renamePressTimer = null;
+    }
+  });
+  textLabel.addEventListener("touchmove", () => {
+    if (renamePressTimer) {
+      clearTimeout(renamePressTimer);
+      renamePressTimer = null;
+    }
+  });
+
   deleteButton.addEventListener("click", async () => {
     await deleteTodoFromDB(todo.id);
     allTodos = allTodos.filter((_, i) => i !== todoIndex);
@@ -464,9 +548,91 @@ function createSubtaskItem(sub, parentIndex, subIndex) {
   textLabel.className = "todo-text subtask-text";
   textLabel.textContent = sub.text;
 
+  const renameBtn = document.createElement("button");
+  renameBtn.className = "rename-btn rename-btn--sub";
+  renameBtn.title = "Rename";
+  renameBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg>`;
+
   const deleteBtn = document.createElement("button");
   deleteBtn.className = "delete-button delete-button--sub";
   deleteBtn.innerHTML = `<svg fill="var(--secondary-color)" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>`;
+  // ── RENAME (subtask) ───────────────────────────────────────────────────────
+  function enterRenameModeForSub() {
+    const current = allTodos[parentIndex].subtasks[subIndex].text;
+    textLabel.style.display = "none";
+    renameBtn.style.display = "none";
+
+    const renameInput = document.createElement("input");
+    renameInput.type = "text";
+    renameInput.className = "rename-input rename-input--sub";
+    renameInput.value = current;
+
+    const confirmBtn = document.createElement("button");
+    confirmBtn.className = "rename-confirm";
+    confirmBtn.textContent = "✓";
+
+    const cancelBtn = document.createElement("button");
+    cancelBtn.className = "rename-cancel";
+    cancelBtn.textContent = "✕";
+
+    textLabel.insertAdjacentElement("afterend", cancelBtn);
+    textLabel.insertAdjacentElement("afterend", confirmBtn);
+    textLabel.insertAdjacentElement("afterend", renameInput);
+    renameInput.focus();
+    renameInput.select();
+
+    async function confirmRename() {
+      const newText = renameInput.value.trim();
+      if (newText.length > 0 && newText !== current) {
+        allTodos[parentIndex].subtasks[subIndex].text = newText;
+        await saveTodo(allTodos[parentIndex]);
+      }
+      updateTodoList();
+    }
+    function cancelRename() {
+      updateTodoList();
+    }
+
+    confirmBtn.addEventListener("click", confirmRename);
+    cancelBtn.addEventListener("click", cancelRename);
+    renameInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        confirmRename();
+      }
+      if (e.key === "Escape") cancelRename();
+    });
+  }
+
+  renameBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    enterRenameModeForSub();
+  });
+
+  let renamePressTimer = null;
+  textLabel.addEventListener(
+    "touchstart",
+    (e) => {
+      renamePressTimer = setTimeout(() => {
+        renamePressTimer = null;
+        enterRenameModeForSub();
+      }, 500);
+    },
+    { passive: true },
+  );
+  textLabel.addEventListener("touchend", () => {
+    if (renamePressTimer) {
+      clearTimeout(renamePressTimer);
+      renamePressTimer = null;
+    }
+  });
+  textLabel.addEventListener("touchmove", () => {
+    if (renamePressTimer) {
+      clearTimeout(renamePressTimer);
+      renamePressTimer = null;
+    }
+  });
+
   deleteBtn.addEventListener("click", async () => {
     allTodos[parentIndex].subtasks = allTodos[parentIndex].subtasks.filter(
       (_, i) => i !== subIndex,
@@ -480,6 +646,7 @@ function createSubtaskItem(sub, parentIndex, subIndex) {
   subLI.appendChild(checkbox);
   subLI.appendChild(customCheckbox);
   subLI.appendChild(textLabel);
+  subLI.appendChild(renameBtn);
   subLI.appendChild(deleteBtn);
 
   return subLI;
