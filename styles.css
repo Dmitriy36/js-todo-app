@@ -214,6 +214,7 @@ form {
 .todo .todo-text {
   padding: 15px 0 15px 10px;
   flex-grow: 1;
+  min-width: 0;
   transition: 500ms ease;
   word-break: break-word;
   cursor: default;
