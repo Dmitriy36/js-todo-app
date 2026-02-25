@@ -454,7 +454,8 @@ form {
   .sub-input-row {
     padding-left: 18px;
   }
-  .rename-btn {
+  .todo .rename-btn,
+  .subtask .rename-btn {
     display: flex;
   }
 }
