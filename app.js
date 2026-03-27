@@ -32,6 +32,8 @@ const todoInput = document.getElementById("todo-input");
 const todoListUL = document.getElementById("todo-list");
 let allTodos = [];
 let currentUser = null;
+let allCategories = [];
+let currentCategoryId = null;
 
 // ── MATRIX RAIN ───────────────────────────────────────────────────────────────
 // Animated Matrix-style falling text in the background.
@@ -208,7 +210,7 @@ firebaseAuth.onAuthStateChanged(async (user) => {
   if (user) {
     currentUser = { id: user.uid, email: user.email };
     showApp();
-    await loadTodos();
+    await loadData();
   } else {
     currentUser = null;
     showLogin();
@@ -244,9 +246,14 @@ function showLogin() {
 }
 
 // ── TODOS ─────────────────────────────────────────────────────────────────────
-async function loadTodos() {
+async function loadData() {
+  await ensureCategories();
+  await loadTodos();
+}
+
+async function ensureCategories() {
   const { data, error } = await supabaseClient
-    .from("todos")
+    .from("categories")
     .select("*")
     .eq("firebase_uid", currentUser.id)
     .order("position", { ascending: true });
@@ -254,8 +261,171 @@ async function loadTodos() {
     console.error(error);
     return;
   }
+
+  allCategories = data || [];
+
+  // First time: create General and assign all existing todos to it
+  if (allCategories.length === 0) {
+    const general = {
+      id: crypto.randomUUID(),
+      firebase_uid: currentUser.id,
+      name: "General",
+      position: 0,
+    };
+    const { error: insertError } = await supabaseClient
+      .from("categories")
+      .insert(general);
+    if (insertError) {
+      console.error(insertError);
+      return;
+    }
+    allCategories = [general];
+
+    // Assign all existing todos to General
+    const { error: updateError } = await supabaseClient
+      .from("todos")
+      .update({ category_id: general.id })
+      .eq("firebase_uid", currentUser.id);
+    if (updateError) console.error(updateError);
+  }
+
+  currentCategoryId = allCategories[0].id;
+  renderCategoryBar();
+}
+
+async function loadTodos() {
+  const { data, error } = await supabaseClient
+    .from("todos")
+    .select("*")
+    .eq("firebase_uid", currentUser.id)
+    .eq("category_id", currentCategoryId)
+    .order("position", { ascending: true });
+  if (error) {
+    console.error(error);
+    return;
+  }
   allTodos = data || [];
   updateTodoList();
+}
+
+async function saveCategory(cat) {
+  const { error } = await supabaseClient.from("categories").upsert({
+    id: cat.id,
+    firebase_uid: currentUser.id,
+    name: cat.name,
+    position: cat.position,
+  });
+  if (error) console.error(error);
+}
+
+async function deleteCategoryFromDB(categoryId) {
+  // Delete all todos in this category first
+  await supabaseClient.from("todos").delete().eq("category_id", categoryId);
+  // Then delete the category
+  const { error } = await supabaseClient
+    .from("categories")
+    .delete()
+    .eq("id", categoryId);
+  if (error) console.error(error);
+}
+
+function renderCategoryBar() {
+  // Remove existing bar if any
+  const existing = document.getElementById("category-bar");
+  if (existing) existing.remove();
+
+  const bar = document.createElement("div");
+  bar.id = "category-bar";
+
+  // Dropdown
+  const select = document.createElement("select");
+  select.id = "category-select";
+  allCategories.forEach((cat) => {
+    const option = document.createElement("option");
+    option.value = cat.id;
+    option.textContent = cat.name;
+    if (cat.id === currentCategoryId) option.selected = true;
+    select.appendChild(option);
+  });
+  select.addEventListener("change", async () => {
+    currentCategoryId = select.value;
+    await loadTodos();
+  });
+
+  // Add category button
+  const addBtn = document.createElement("button");
+  addBtn.id = "add-category-btn";
+  addBtn.title = "Add category";
+  addBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>`;
+  addBtn.addEventListener("click", () => {
+    const name = prompt("New category name:");
+    if (!name || !name.trim()) return;
+    createCategory(name.trim());
+  });
+
+  // Rename category button (hidden for General)
+  const renameBtn = document.createElement("button");
+  renameBtn.id = "rename-category-btn";
+  renameBtn.title = "Rename category";
+  renameBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg>`;
+  renameBtn.addEventListener("click", () => {
+    const cat = allCategories.find((c) => c.id === currentCategoryId);
+    if (!cat) return;
+    const newName = prompt("Rename category:", cat.name);
+    if (!newName || !newName.trim()) return;
+    cat.name = newName.trim();
+    saveCategory(cat);
+    renderCategoryBar();
+  });
+
+  // Delete category button (hidden for General)
+  const deleteBtn = document.createElement("button");
+  deleteBtn.id = "delete-category-btn";
+  deleteBtn.title = "Delete category";
+  deleteBtn.innerHTML = `<svg fill="var(--secondary-color)" xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>`;
+  deleteBtn.addEventListener("click", async () => {
+    const cat = allCategories.find((c) => c.id === currentCategoryId);
+    if (!cat) return;
+    const confirmed = confirm(`Delete "${cat.name}" and all its tasks?`);
+    if (!confirmed) return;
+    await deleteCategoryFromDB(currentCategoryId);
+    allCategories = allCategories.filter((c) => c.id !== currentCategoryId);
+    currentCategoryId = allCategories[0].id;
+    await loadTodos();
+    renderCategoryBar();
+  });
+
+  // Hide rename and delete for General (always first category)
+  const isGeneral = allCategories[0].id === currentCategoryId;
+  if (isGeneral) {
+    renameBtn.style.display = "none";
+    deleteBtn.style.display = "none";
+  }
+
+  bar.appendChild(select);
+  bar.appendChild(addBtn);
+  bar.appendChild(renameBtn);
+  bar.appendChild(deleteBtn);
+
+  // Insert bar before the form inside .wrapper
+  const wrapper = document.querySelector(".wrapper");
+  const form = document.querySelector("form");
+  wrapper.insertBefore(bar, form);
+}
+
+async function createCategory(name) {
+  const newCat = {
+    id: crypto.randomUUID(),
+    firebase_uid: currentUser.id,
+    name,
+    position: allCategories.length,
+  };
+  await saveCategory(newCat);
+  allCategories.push(newCat);
+  currentCategoryId = newCat.id;
+  allTodos = [];
+  updateTodoList();
+  renderCategoryBar();
 }
 
 async function saveTodo(todo) {
@@ -267,6 +437,7 @@ async function saveTodo(todo) {
     text: todo.text,
     completed: todo.completed,
     subtasks: todo.subtasks || [],
+    category_id: todo.category_id || currentCategoryId,
   });
   if (error) console.error(error);
 }
@@ -292,6 +463,7 @@ async function addTodo() {
       completed: false,
       subtasks: [],
       position: allTodos.length,
+      category_id: currentCategoryId,
     };
     allTodos.push(newTodo);
     updateTodoList();
